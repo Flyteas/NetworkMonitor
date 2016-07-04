@@ -78,7 +78,7 @@ int SocketListen(int Port)
   	}
   	time(&TimeNow);//get now time
   	LocalTimeNow = localtime(&TimeNow); // convert now time to local time
-  	printf("[%d-%02d-%02d %02d:%02d:%02d]\n",LocalTimeNow->tm_year+1900,LocalTimeNow->tm_mon,LocalTimeNow->tm_mday,LocalTimeNow->tm_hour,LocalTimeNow->tm_min,LocalTimeNow->tm_sec);
+  	printf("[%d-%02d-%02d %02d:%02d:%02d]\n",LocalTimeNow->tm_year+1900,LocalTimeNow->tm_mon+1,LocalTimeNow->tm_mday,LocalTimeNow->tm_hour,LocalTimeNow->tm_min,LocalTimeNow->tm_sec);
   	printf("Monitor service start\nPort: %d\n\n",Port);
   	while(1)
   	{
@@ -120,14 +120,14 @@ void MsgReceive(int* SocketAcceptFd) //Msg receive thread function
 	ClientAddrLen = sizeof(ClientAddr);
 	getpeername(*SocketAcceptFd, (struct sockaddr *)&ClientAddr, (socklen_t *)&ClientAddrLen);//Get client's address
 	inet_ntop(AF_INET, &ClientAddr.sin_addr, ClientIP, sizeof(ClientIP));
-	printf("[%d-%02d-%02d %02d:%02d:%02d]\n",LocalTimeNow->tm_year+1900,LocalTimeNow->tm_mon,LocalTimeNow->tm_mday,LocalTimeNow->tm_hour,LocalTimeNow->tm_min,LocalTimeNow->tm_sec);
+	printf("[%d-%02d-%02d %02d:%02d:%02d]\n",LocalTimeNow->tm_year+1900,LocalTimeNow->tm_mon+1,LocalTimeNow->tm_mday,LocalTimeNow->tm_hour,LocalTimeNow->tm_min,LocalTimeNow->tm_sec);
 	printf("Msg: Client %s connected\n\n",ClientIP);
 	while(1)
 	{
 		ReadSize = recv(*SocketAcceptFd,MsgRecvBuff,MSG_REC_BUFFER_SIZE, 0);
 		time(&TimeNow); //get now time
 		LocalTimeNow = localtime(&TimeNow); //convert now time to local time
-		printf("[%04d-%02d-%02d %02d:%02d:%02d]\n",LocalTimeNow->tm_year+1900,LocalTimeNow->tm_mon,LocalTimeNow->tm_mday,LocalTimeNow->tm_hour,LocalTimeNow->tm_min,LocalTimeNow->tm_sec);
+		printf("[%04d-%02d-%02d %02d:%02d:%02d]\n",LocalTimeNow->tm_year+1900,LocalTimeNow->tm_mon+1,LocalTimeNow->tm_mday,LocalTimeNow->tm_hour,LocalTimeNow->tm_min,LocalTimeNow->tm_sec);
 		if(ReadSize == -1) //Recived faild
 		{
 			printf("Msg: Client %s recived falid\n\n",ClientIP);
@@ -180,7 +180,7 @@ void ParseRecvMsg(char* RecvMsg,char* ClientIP,char* ParsedMsg) //Parse the rece
 	TimeStampInt = atoi(strtok(NULL,"|"));
 	ClientSysTime = (time_t)TimeStampInt; //Timestamp to time_t
 	ClientSysTimeLocal = localtime(&ClientSysTime); // time_t to struct tm(Local time)
-	sprintf(ClientSysTimeStr,"%04d-%02d-%02d %02d:%02d:%02d",ClientSysTimeLocal->tm_year+1900,ClientSysTimeLocal->tm_mon,ClientSysTimeLocal->tm_mday,ClientSysTimeLocal->tm_hour,ClientSysTimeLocal->tm_min,ClientSysTimeLocal->tm_sec); //struct tm to str
+	sprintf(ClientSysTimeStr,"%04d-%02d-%02d %02d:%02d:%02d",ClientSysTimeLocal->tm_year+1900,ClientSysTimeLocal->tm_mon+1,ClientSysTimeLocal->tm_mday,ClientSysTimeLocal->tm_hour,ClientSysTimeLocal->tm_min,ClientSysTimeLocal->tm_sec); //struct tm to str
 	sprintf(Runtime,"%s",strtok(NULL,"|"));
 	sprintf(CpuLoadOneMin,"%s",strtok(NULL,"|"));
 	sprintf(CpuLoadFiveMin,"%s",strtok(NULL,"|"));
