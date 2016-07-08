@@ -64,11 +64,11 @@ int SocketListen(int Port)
  	{
 		return 1; //Create socket error
   	}
- 	bzero(&Addr,sizeof(struct sockaddr_in)); //reset socket addr
+ 	memset(&Addr,0,sizeof(struct sockaddr_in)); //reset socket addr
  	Addr.sin_family = AF_INET;
  	Addr.sin_port = htons(Port);
  	Addr.sin_addr.s_addr = htonl(INADDR_ANY);
- 	if(bind(SocketListenFd,(struct sockaddr *)&Addr,sizeof(Addr)) < 0)
+ 	if(bind(SocketListenFd,(struct sockaddr *)&Addr,sizeof(Addr)) < 0) //Give a socket fd to the local addr
  	{
 		return 2; //Socket bind error
   	}
@@ -76,14 +76,14 @@ int SocketListen(int Port)
   	{
   		return 3; //Socket listen error
   	}
-  	time(&TimeNow);//get now time
-  	LocalTimeNow = localtime(&TimeNow); // convert now time to local time
+  	time(&TimeNow);//Get now time
+  	LocalTimeNow = localtime(&TimeNow); //Convert now time to local time
   	printf("[%d-%02d-%02d %02d:%02d:%02d]\n",LocalTimeNow->tm_year+1900,LocalTimeNow->tm_mon+1,LocalTimeNow->tm_mday,LocalTimeNow->tm_hour,LocalTimeNow->tm_min,LocalTimeNow->tm_sec);
   	printf("Monitor service start\nPort: %d\n\n",Port);
   	while(1)
   	{
   		SocketAcceptFd = accept(SocketListenFd,NULL,NULL); //Accept Socket connect
-   		if((SocketAcceptFd < 0) && (errno == EINTR))
+   		if((SocketAcceptFd < 0) && (errno == EINTR)) //Read interrupted
 		{
       		continue;
 		}
@@ -93,8 +93,8 @@ int SocketListen(int Port)
 			continue;
 		}
    		pthread_t RecvThread;
-   		memset(&RecvThread, 0, sizeof(RecvThread));
-   		int* NewSocketAcceptFd = (int*)malloc(sizeof(int));
+   		memset(&RecvThread, 0, sizeof(RecvThread)); //init
+   		int* NewSocketAcceptFd = (int*)malloc(sizeof(int)); //Malloc a new space to copy Fd. Avoid the main thread covered Fd
    		*NewSocketAcceptFd = SocketAcceptFd;
    		if(pthread_create(&RecvThread, NULL, (void*)MsgReceive, NewSocketAcceptFd) != 0)
    		{
@@ -125,8 +125,8 @@ void MsgReceive(int* SocketAcceptFd) //Msg receive thread function
 	while(1)
 	{
 		ReadSize = recv(*SocketAcceptFd,MsgRecvBuff,MSG_REC_BUFFER_SIZE, 0);
-		time(&TimeNow); //get now time
-		LocalTimeNow = localtime(&TimeNow); //convert now time to local time
+		time(&TimeNow); //Get now time
+		LocalTimeNow = localtime(&TimeNow); //Convert now time to local time
 		printf("[%04d-%02d-%02d %02d:%02d:%02d]\n",LocalTimeNow->tm_year+1900,LocalTimeNow->tm_mon+1,LocalTimeNow->tm_mday,LocalTimeNow->tm_hour,LocalTimeNow->tm_min,LocalTimeNow->tm_sec);
 		if(ReadSize == -1) //Recived faild
 		{
@@ -143,6 +143,7 @@ void MsgReceive(int* SocketAcceptFd) //Msg receive thread function
 		printf("%s\n",ParsedMsg);
 	}
 	close(*SocketAcceptFd);
+	free(SocketAcceptFd);
 	return;
 }
 

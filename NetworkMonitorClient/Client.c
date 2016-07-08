@@ -34,13 +34,13 @@ int main(int argc,char* argv[])
 		return 0;
 	}
 	IP = argv[1];
-	Port = atoi(argv[2]);
-	SocketFd = SocketConnect(IP,Port);
+	Port = atoi(argv[2]); // convert char* to int
+	SocketFd = SocketConnect(IP,Port); //connect to the server
 	while(1)
 	{
 		int SendResult;
-		sleep(SEND_DELAY_SECONDS);
-		SendResult = SendSystemInfo(SocketFd);
+		sleep(SEND_DELAY_SECONDS); //sleep n seconds
+		SendResult = SendSystemInfo(SocketFd); //send sysetm info to server
 		if(SendResult == 0)
 		{
 			printf("Send successful\n");
@@ -63,21 +63,21 @@ int main(int argc,char* argv[])
 	return 0;
 }
 
-int SocketConnect(char* IP,int Port) //Socket Connect
+int SocketConnect(char* IP,int Port) //Connect to the server
 {
-	struct sockaddr_in addr; //服务器端地址
-	int fd; //文件描述符fd 用于唯一标识socket
+	struct sockaddr_in addr; //Server address
+	int fd; //File descriptor for socket
 
- 	if((fd=socket(AF_INET,SOCK_STREAM,0))<0) ////创建socket连接
+ 	if((fd=socket(AF_INET,SOCK_STREAM,0))<0) //Create socket,AF_INT is IPV4,SOCK_STREAM is TCP
 	{
 		printf("Create socket error\n");
 		exit(1);
   	}
- 	bzero(&addr,sizeof(struct sockaddr_in)); //重置
- 	addr.sin_family=AF_INET; //ARPA因特网协议
- 	addr.sin_port=htons(Port); //端口号
- 	addr.sin_addr.s_addr=inet_addr(IP); //地址
-  	if(connect(fd, (struct sockaddr *)&addr,sizeof(struct sockaddr)) == -1) //连接服务器
+ 	memset(&addr,0,sizeof(struct sockaddr_in)); //Initialize addr with 0
+ 	addr.sin_family = AF_INET; //Use IPV4 protocol
+ 	addr.sin_port = htons(Port); //Port,convert host byte order to network byte order
+ 	addr.sin_addr.s_addr = inet_addr(IP); //IP
+  	if(connect(fd,(struct sockaddr *)&addr,sizeof(struct sockaddr)) == -1) //connect to the server
 	{
         printf("Connect error\n");
         exit(0);
@@ -104,12 +104,12 @@ int SendSystemInfo(int fd) //Send system info
 		struct utsname UnameInfo;
 		struct sysinfo Info;
 
-		GetUnameInfoResult = syscall(__NR_uname,&UnameInfo);
-		GetInfoResult = syscall(__NR_sysinfo,&Info); //system call
-		if(GetUnameInfoResult == 0)
+		GetUnameInfoResult = syscall(__NR_uname,&UnameInfo); //Get uname info
+		GetInfoResult = syscall(__NR_sysinfo,&Info); //Get system info
+		if(GetUnameInfoResult == 0) //Get uname info successful
 		{
-			sprintf(HostName,"%s|",UnameInfo.nodename);
-			sprintf(SystemVersion,"%s|",UnameInfo.version);
+			sprintf(HostName,"%s|",UnameInfo.nodename); //Write formatted nodename to HostName
+			sprintf(SystemVersion,"%s|",UnameInfo.version); //Write formatted version to HostName
 		}
 		else
 		{
@@ -123,9 +123,9 @@ int SendSystemInfo(int fd) //Send system info
 				return 3;
 			}
 		}
-		if(GetInfoResult == 0) //get info successful
+		if(GetInfoResult == 0) //Get system info successful
 		{
-			sprintf(TimeStamp,"%d|",(int)time(&TimeLocal));
+			sprintf(TimeStamp,"%d|",(int)time(&TimeLocal)); //Timestamp
 			sprintf(Runtime,"%ld|",Info.uptime);
 			sprintf(CpuLoadOneMin,"%ld|",Info.loads[0]);
 			sprintf(CpuLoadFiveMin,"%ld|",Info.loads[1]);
@@ -144,9 +144,9 @@ int SendSystemInfo(int fd) //Send system info
 			strcat(MsgSend,FreeRam);
 			strcat(MsgSend,ProcessNum);
 		}
-		else //get info faild
+		else //Get system info faild
 		{
-			strcat(MsgSend,"2"); //Get sysinfo faild;
+			strcat(MsgSend,"2"); //Faild code;
 			if(send(fd, MsgSend, strlen(MsgSend)+1, 0) != -1) //send successful
 			{
 				return 2;
